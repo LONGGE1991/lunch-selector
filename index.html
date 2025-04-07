@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>今天吃什么？</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 15px;
+            background-color: #f0f2f5;
+        }
+
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        input[type="text"] {
+            width: 70%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #list {
+            margin: 15px 0;
+            padding: 10px;
+            border: 1px dashed #ddd;
+            min-height: 50px;
+        }
+
+        #result {
+            font-size: 24px;
+            font-weight: bold;
+            color: #28a745;
+            margin: 20px 0;
+            text-align: center;
+            min-height: 40px;
+        }
+
+        .item {
+            display: inline-block;
+            background: #e9ecef;
+            padding: 5px 10px;
+            margin: 5px;
+            border-radius: 15px;
+            cursor: pointer;
+        }
+
+        @keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>今天中午吃什么？</h2>
+        
+        <input type="text" id="newItem" placeholder="输入餐厅/外卖名称">
+        <button onclick="addItem()">添加选项</button>
+        
+        <div id="list"></div>
+        
+        <button onclick="startRandom()" style="width: 100%">开始随机选择！</button>
+        <button onclick="clearAll()" style="background-color: #dc3545; margin-top: 10px">清空所有选项</button>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        // 加载保存的选项
+        let items = JSON.parse(localStorage.getItem('lunchItems')) || [];
+        updateList();
+
+        function addItem() {
+            const input = document.getElementById('newItem');
+            if (input.value.trim()) {
+                items.push(input.value.trim());
+                input.value = '';
+                saveItems();
+                updateList();
+            }
+        }
+
+        function saveItems() {
+            localStorage.setItem('lunchItems', JSON.stringify(items));
+        }
+
+        function updateList() {
+            const listDiv = document.getElementById('list');
+            listDiv.innerHTML = items.map((item, index) => `
+                <div class="item" onclick="removeItem(${index})">
+                    ${item} ×
+                </div>
+            `).join('');
+        }
+
+        function removeItem(index) {
+            items.splice(index, 1);
+            saveItems();
+            updateList();
+        }
+
+        function clearAll() {
+            items = [];
+            saveItems();
+            updateList();
+            document.getElementById('result').innerHTML = '';
+        }
+
+        function startRandom() {
+            if (items.length === 0) {
+                alert('请先添加选项！');
+                return;
+            }
+
+            const resultDiv = document.getElementById('result');
+            let count = 0;
+            const maxCycles = 20;
+            
+            resultDiv.style.animation = 'blink 0.2s infinite';
+            
+            const interval = setInterval(() => {
+                resultDiv.textContent = items[Math.floor(Math.random() * items.length)];
+                count++;
+                
+                if (count > maxCycles) {
+                    clearInterval(interval);
+                    resultDiv.style.animation = '';
+                    saveSelection(resultDiv.textContent);
+                }
+            }, 100);
+        }
+
+        function saveSelection(selected) {
+            // 可以扩展保存历史记录功能
+            console.log('已选择:', selected);
+        }
+    </script>
+</body>
+</html>
